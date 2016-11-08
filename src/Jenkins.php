@@ -44,11 +44,26 @@ class Jenkins
     private $crumbRequestField;
 
     /**
+     * Variable to disable or not the HTTPS check in curl
+     *
+     * @var bool
+     */
+    private $checkHttps;
+
+    /**
      * @param string $baseUrl
      */
-    public function __construct($baseUrl)
+    public function __construct($baseUrl, $checkHttps = true)
     {
         $this->baseUrl = $baseUrl;
+        $this->checkHttps = $checkHttps;
+    }
+
+    public function checkHttps($curl)
+    {
+        if (!$this->checkHttps) {
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        }
     }
 
     /**
@@ -98,6 +113,8 @@ class Jenkins
 
         $curl = curl_init($url);
 
+        $this->checkHttps($curl);
+
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
 
         $ret = curl_exec($curl);
@@ -124,6 +141,9 @@ class Jenkins
     public function isAvailable()
     {
         $curl = curl_init($this->baseUrl . '/api/json');
+
+        $this->checkHttps($curl);
+
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
         curl_exec($curl);
 
@@ -152,6 +172,8 @@ class Jenkins
         }
 
         $curl = curl_init($this->baseUrl . '/api/json');
+
+        $this->checkHttps($curl);
 
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
         $ret = curl_exec($curl);
@@ -212,6 +234,8 @@ class Jenkins
             $url  = sprintf('%s/computer/%s/executors/%s/api/json', $this->baseUrl, $computer, $i);
             $curl = curl_init($url);
 
+            $this->checkHttps($curl);
+
             curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
             $ret = curl_exec($curl);
 
@@ -249,6 +273,8 @@ class Jenkins
 
         $curl = curl_init($url);
 
+        $this->checkHttps($curl);
+
         curl_setopt($curl, \CURLOPT_POST, 1);
         curl_setopt($curl, \CURLOPT_POSTFIELDS, http_build_query($parameters));
 
@@ -277,6 +303,8 @@ class Jenkins
     {
         $url  = sprintf('%s/job/%s/api/json', $this->baseUrl, $jobName);
         $curl = curl_init($url);
+
+        $this->checkHttps($curl);
 
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
         $ret = curl_exec($curl);
@@ -310,6 +338,8 @@ class Jenkins
         $url  = sprintf('%s/job/%s/doDelete', $this->baseUrl, $jobName);
         $curl = curl_init($url);
 
+        $this->checkHttps($curl);
+
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curl, \CURLOPT_POST, 1);
 
@@ -334,6 +364,8 @@ class Jenkins
     {
         $url  = sprintf('%s/queue/api/json', $this->baseUrl);
         $curl = curl_init($url);
+
+        $this->checkHttps($curl);
 
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
         $ret = curl_exec($curl);
@@ -390,6 +422,8 @@ class Jenkins
         $url  = sprintf('%s/view/%s/api/json', $this->baseUrl, rawurlencode($viewName));
         $curl = curl_init($url);
 
+        $this->checkHttps($curl);
+
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
         $ret = curl_exec($curl);
 
@@ -422,6 +456,8 @@ class Jenkins
         }
         $url  = sprintf('%s/job/%s/%d/api/json%s', $this->baseUrl, $job, $buildId, $tree);
         $curl = curl_init($url);
+
+        $this->checkHttps($curl);
 
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
         $ret = curl_exec($curl);
@@ -463,6 +499,8 @@ class Jenkins
     {
         $url  = sprintf('%s/computer/%s/api/json', $this->baseUrl, $computerName);
         $curl = curl_init($url);
+
+        $this->checkHttps($curl);
 
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
         $ret = curl_exec($curl);
@@ -546,6 +584,9 @@ class Jenkins
     {
         $url  = sprintf('%s/createItem?name=%s', $this->baseUrl, $jobname);
         $curl = curl_init($url);
+
+        $this->checkHttps($curl);
+
         curl_setopt($curl, \CURLOPT_POST, 1);
 
         curl_setopt($curl, \CURLOPT_POSTFIELDS, $xmlConfiguration);
@@ -579,6 +620,9 @@ class Jenkins
     {
         $url  = sprintf('%s/job/%s/config.xml', $this->baseUrl, $jobname);
         $curl = curl_init($url);
+
+        $this->checkHttps($curl);
+
         curl_setopt($curl, \CURLOPT_POST, 1);
         curl_setopt($curl, \CURLOPT_POSTFIELDS, $configuration);
 
@@ -603,6 +647,9 @@ class Jenkins
     {
         $url  = sprintf('%s/job/%s/config.xml', $this->baseUrl, $jobname);
         $curl = curl_init($url);
+
+        $this->checkHttps($curl);
+
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
         $ret = curl_exec($curl);
 
@@ -623,6 +670,9 @@ class Jenkins
         );
 
         $curl = curl_init($url);
+
+        $this->checkHttps($curl);
+
         curl_setopt($curl, \CURLOPT_POST, 1);
 
         $headers = array();
@@ -651,6 +701,9 @@ class Jenkins
         $url = sprintf('%s/queue/item/%s/cancelQueue', $this->baseUrl, $queue->getId());
 
         $curl = curl_init($url);
+
+        $this->checkHttps($curl);
+
         curl_setopt($curl, \CURLOPT_POST, 1);
 
         $headers = array();
@@ -679,6 +732,9 @@ class Jenkins
     {
         $url  = sprintf('%s/computer/%s/toggleOffline', $this->baseUrl, $computerName);
         $curl = curl_init($url);
+
+        $this->checkHttps($curl);
+
         curl_setopt($curl, \CURLOPT_POST, 1);
 
         $headers = array();
@@ -703,6 +759,9 @@ class Jenkins
     {
         $url  = sprintf('%s/computer/%s/doDelete', $this->baseUrl, $computerName);
         $curl = curl_init($url);
+
+        $this->checkHttps($curl);
+
         curl_setopt($curl, \CURLOPT_POST, 1);
 
         $headers = array();
@@ -727,6 +786,9 @@ class Jenkins
     {
         $url  = sprintf('%s/job/%s/%s/consoleText', $this->baseUrl, $jobname, $buildNumber);
         $curl = curl_init($url);
+
+        $this->checkHttps($curl);
+
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
 
         return curl_exec($curl);
@@ -744,6 +806,8 @@ class Jenkins
     {
         $url  = sprintf('%s/job/%s/%d/testReport/api/json', $this->baseUrl, $jobName, $buildId);
         $curl = curl_init($url);
+
+        $this->checkHttps($curl);
 
         curl_setopt($curl, \CURLOPT_RETURNTRANSFER, 1);
         $ret = curl_exec($curl);
@@ -781,6 +845,9 @@ class Jenkins
         $url  = $this->baseUrl . '/' . $uri;
         $curl = curl_init($url);
         curl_setopt_array($curl, $curlOptions);
+
+        $this->checkHttps($curl);
+
         $ret = curl_exec($curl);
 
         $this->validateCurl($curl, sprintf('Error calling "%s"', $url));
@@ -795,8 +862,8 @@ class Jenkins
     {
         $return = $this->execute(
             '/computer/api/json', array(
-                \CURLOPT_RETURNTRANSFER => 1,
-            )
+                                    \CURLOPT_RETURNTRANSFER => 1,
+                                )
         );
         $infos  = json_decode($return);
         if (!$infos instanceof \stdClass) {
